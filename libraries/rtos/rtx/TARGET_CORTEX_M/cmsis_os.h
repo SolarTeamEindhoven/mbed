@@ -243,7 +243,7 @@ typedef struct os_thread_def  {
   os_pthread               pthread;      ///< start address of thread function
   osPriority             tpriority;      ///< initial thread priority
   uint32_t               stacksize;      ///< stack size requirements in bytes
-  uint32_t               *stack_pointer;  ///< pointer to the stack memory block
+  unsigned char         *stack_pointer;  ///< pointer to the stack memory block
   struct OS_TCB          tcb;
 } osThreadDef_t;
 
@@ -337,7 +337,7 @@ int32_t osKernelRunning(void);
 extern osThreadDef_t os_thread_def_##name
 #else                            // define the object
 #define osThreadDef(name, priority, stacksz)  \
-uint32_t os_thread_def_stack_##name [stacksz / sizeof(uint32_t)]; \
+unsigned char os_thread_def_stack_##name [stacksz]; \
 osThreadDef_t os_thread_def_##name = \
 { (name), (priority), (stacksz), (os_thread_def_stack_##name)}
 #endif
@@ -393,6 +393,11 @@ osPriority osThreadGetPriority (osThreadId thread_id);
 /// \return status code that indicates the execution status of the function.
 osStatus osDelay (uint32_t millisec);
 
+/// Wait for Timeout (Time Delay).
+/// \param[in]     microsec      time delay value
+/// \return status code that indicates the execution status of the function.
+osStatus osDelayUs (uint32_t microsec);
+
 #if (defined (osFeature_Wait)  &&  (osFeature_Wait != 0))     // Generic Wait available
 
 /// Wait for Signal, Message, Mail, or Timeout.
@@ -437,10 +442,17 @@ osTimerId osTimerCreate (osTimerDef_t *timer_def, os_timer_type type, void *argu
 
 /// Start or restart a timer.
 /// \param[in]     timer_id      timer ID obtained by \ref osTimerCreate.
-/// \param[in]     millisec      time delay value of the timer.
+/// \param[in]     millisec      time delay value of the timer in milli sec.
 /// \return status code that indicates the execution status of the function.
 /// \note MUST REMAIN UNCHANGED: \b osTimerStart shall be consistent in every CMSIS-RTOS.
 osStatus osTimerStart (osTimerId timer_id, uint32_t millisec);
+
+/// Start or restart a timer.
+/// \param[in]     timer_id      timer ID obtained by \ref osTimerCreate.
+/// \param[in]     microsec      time delay value of the timer in micro sec.
+/// \return status code that indicates the execution status of the function.
+/// \note MUST REMAIN UNCHANGED: \b osTimerStart shall be consistent in every CMSIS-RTOS.
+osStatus osTimerStart_us (osTimerId timer_id, uint32_t microsec);
 
 /// Stop the timer.
 /// \param[in]     timer_id      timer ID obtained by \ref osTimerCreate.

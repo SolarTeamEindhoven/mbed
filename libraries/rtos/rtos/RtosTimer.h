@@ -51,10 +51,22 @@ public:
     osStatus stop(void);
 
     /** start a timer.
-      @param   millisec  time delay value of the timer.
+      @param   sec  time delay value of the timer.
       @return  status code that indicates the execution status of the function.
     */
-    osStatus start(uint32_t millisec);
+    osStatus start(float sec);
+
+    /** start a timer.
+      @param   millisec  time delay value of the timer in milli sec.
+      @return  status code that indicates the execution status of the function.
+    */
+    osStatus start_ms(uint32_t millisec);
+
+    /** start a timer.
+      @param   microsec  time delay value of the timer in micro sec.
+      @return  status code that indicates the execution status of the function.
+    */
+    osStatus start_us(uint32_t microsec);
 
     ~RtosTimer();
 

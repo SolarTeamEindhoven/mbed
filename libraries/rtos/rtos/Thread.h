@@ -91,10 +91,22 @@ public:
     static osEvent signal_wait(int32_t signals, uint32_t millisec=osWaitForever);
 
     /** Wait for a specified time period in millisec:
-      @param   millisec  time delay value
+      @param   sec  time delay value
       @return  status code that indicates the execution status of the function.
     */
-    static osStatus wait(uint32_t millisec);
+    static osStatus wait(float sec);
+
+    /** Wait for a specified time period in millisec:
+      @param   millisec  time delay value in milli sec.
+      @return  status code that indicates the execution status of the function.
+    */
+    static osStatus wait_ms(uint32_t millisec);
+
+    /** Wait for a specified time period in microsec:
+      @param   microsec  time delay value in micro sec.
+      @return  status code that indicates the execution status of the function.
+    */
+    static osStatus wait_us(uint32_t microsec);
 
     /** Pass control to next thread that is in state READY.
       @return  status code that indicates the execution status of the function.
