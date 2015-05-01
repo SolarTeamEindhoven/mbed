@@ -118,6 +118,8 @@ public:
     */
     static osThreadId gettid();
 
+    osThreadId getthistid();
+
     virtual ~Thread();
 
 private:

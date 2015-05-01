@@ -102,6 +102,11 @@ osThreadId Thread::gettid() {
     return osThreadGetId();
 }
 
+osThreadId Thread::getthistid()
+{
+	return _tid;
+}
+
 Thread::~Thread() {
     terminate();
 #ifndef __MBED_CMSIS_RTOS_CA9
