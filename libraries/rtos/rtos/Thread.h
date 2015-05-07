@@ -25,19 +25,21 @@
 #include <stdint.h>
 #include "cmsis_os.h"
 
-namespace rtos {
+namespace rtos
+{
 
 /** The Thread class allow defining, creating, and controlling thread functions in the system. */
-class Thread {
+class Thread
+{
 public:
-    /** Create a new thread, and start it executing the specified function.
-      @param   task           function to be executed by this thread.
-      @param   argument       pointer that is passed to the thread function as start argument. (default: NULL).
-      @param   priority       initial priority of the thread function. (default: osPriorityNormal).
-      @param   stack_size      stack size (in bytes) requirements for the thread function. (default: DEFAULT_STACK_SIZE).
-      @param   stack_pointer  pointer to the stack area to be used by this thread (default: NULL).
-    */
-    Thread(void (*task)(void const *argument), void *argument=NULL,
+	/** Create a new thread, and start it executing the specified function.
+	 @param   task           function to be executed by this thread.
+	 @param   argument       pointer that is passed to the thread function as start argument. (default: NULL).
+	 @param   priority       initial priority of the thread function. (default: osPriorityNormal).
+	 @param   stack_size      stack size (in bytes) requirements for the thread function. (default: DEFAULT_STACK_SIZE).
+	 @param   stack_pointer  pointer to the stack area to be used by this thread (default: NULL).
+	 */
+	Thread(void (*task)(void const *argument), void *argument = NULL,
            osPriority priority=osPriorityNormal,
            uint32_t stack_size=DEFAULT_STACK_SIZE,
            unsigned char *stack_pointer=NULL);
@@ -65,7 +67,8 @@ public:
     int32_t signal_set(int32_t signals);
 
     /** State of the Thread */
-    enum State {
+	enum State
+	{
         Inactive,           /**< Not created or terminated */
         Ready,              /**< Ready to run */
         Running,            /**< Running */
@@ -117,6 +120,8 @@ public:
       @return  thread ID for reference by other functions or NULL in case of error.
     */
     static osThreadId gettid();
+
+    osThreadId getthistid();
 
     virtual ~Thread();
 
