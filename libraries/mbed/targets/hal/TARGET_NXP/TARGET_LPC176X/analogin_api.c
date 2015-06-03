@@ -19,7 +19,7 @@
 #include "cmsis.h"
 #include "pinmap.h"
 
-#define ANALOGIN_MEDIAN_FILTER      1
+#define ANALOGIN_MEDIAN_FILTER      0
 
 #define ADC_10BIT_RANGE             0x3FF
 #define ADC_12BIT_RANGE             0xFFF
