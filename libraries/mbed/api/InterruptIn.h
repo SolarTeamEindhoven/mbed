@@ -118,6 +118,8 @@ public:
      */
     void disable_irq();
 
+    void clearPendingInterrupt();
+
     static void _irq_handler(uint32_t id, gpio_irq_event event);
 
 protected:

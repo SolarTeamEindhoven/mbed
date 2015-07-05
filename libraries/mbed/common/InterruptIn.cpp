@@ -57,6 +57,16 @@ void InterruptIn::fall(void (*fptr)(void)) {
     }
 }
 
+void InterruptIn::clearPendingInterrupt()
+{
+	switch (gpio_irq.port) {
+		case LPC_GPIO0_BASE:
+			LPC_GPIOINT->IO0IntClr = 1 << gpio_irq.pin; break;
+		case LPC_GPIO2_BASE:
+			LPC_GPIOINT->IO2IntClr = 1 << gpio_irq.pin; break;
+	}
+}
+
 void InterruptIn::_irq_handler(uint32_t id, gpio_irq_event event) {
     InterruptIn *handler = (InterruptIn*)id;
     switch (event) {
