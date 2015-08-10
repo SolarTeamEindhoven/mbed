@@ -33,7 +33,7 @@
  *---------------------------------------------------------------------------*/
 
 #include "cmsis_os.h"
-
+#include "semihost_api.h"
 
 /*----------------------------------------------------------------------------
  *      RTX User configuration part BEGIN
@@ -277,7 +277,10 @@ void os_idle_demon (void) {
      This can be done, but it would break the local file system.
   */
   for (;;) {
-      // sleep();
+    if( !semihost_connected() )
+    {
+      sleep();
+    }
   }
 }
 
