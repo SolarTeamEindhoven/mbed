@@ -277,8 +277,10 @@ void os_idle_demon (void) {
      This can be done, but it would break the local file system.
   */
   for (;;) {
-    if( semihost_connected() )
+    if( !semihost_connected() )
+    {
       sleep();
+    }
   }
 }
 
