@@ -366,19 +366,6 @@ static uint32_t rt_ms2tick (uint32_t millisec) {
   return tick;
 }
 
-/// Convert timeout in microsec to system ticks
-static uint32_t rt_us2tick (uint32_t microsec) {
-  uint32_t tick;
-
-  if (microsec == osWaitForever) return 0xFFFF; // Indefinite timeout
-  if (microsec > 4000000000) return 0xFFFE;        // Max ticks supported
-
-  tick = (microsec + os_clockrate - 1)  / os_clockrate;
-  if (tick > 0xFFFE) return 0xFFFE;
-
-  return tick;
-}
-
 /// Convert Thread ID to TCB pointer
 static P_TCB rt_tid2ptcb (osThreadId thread_id) {
   P_TCB ptcb;
@@ -560,18 +547,19 @@ osThreadId svcThreadCreate (osThreadDef_t *thread_def, void *argument) {
   U8 priority = thread_def->tpriority - osPriorityIdle + 1;
   P_TCB task_context = &thread_def->tcb;
 
-  /* If "size != 0" use a private user provided stack. */
+  /* Utilize the user provided stack. */
   task_context->stack      = (U32*)thread_def->stack_pointer;
   task_context->priv_stack = thread_def->stacksize;
-  /* Pass parameter 'argv' to 'rt_init_context' */
-  task_context->msg = argument;
-  /* For 'size == 0' system allocates the user stack from the memory pool. */
-  rt_init_context (task_context, priority, (FUNCP)thread_def->pthread);
-
   /* Find a free entry in 'os_active_TCB' table. */
   OS_TID tsk = rt_get_TID ();
   os_active_TCB[tsk-1] = task_context;
   task_context->task_id = tsk;
+  /* Pass parameter 'argv' to 'rt_init_context' */
+  task_context->msg = argument;
+  /* Initialize thread context structure, including the thread's stack. */
+  rt_init_context (task_context, priority, (FUNCP)thread_def->pthread);
+
+  /* Dispatch this task to the scheduler for execution. */
   DBG_TASK_NOTIFY(task_context, __TRUE);
   rt_dispatch (task_context);
 
@@ -700,7 +688,6 @@ __NO_RETURN void osThreadExit (void) {
 
 // Generic Wait Service Calls declarations
 SVC_1_1(svcDelay,           osStatus, uint32_t, RET_osStatus)
-SVC_1_1(svcDelayUs,         osStatus, uint32_t, RET_osStatus)
 #if osFeature_Wait != 0
 SVC_1_3(svcWait,  os_InRegs osEvent,  uint32_t, RET_osEvent)
 #endif
@@ -711,13 +698,6 @@ SVC_1_3(svcWait,  os_InRegs osEvent,  uint32_t, RET_osEvent)
 osStatus svcDelay (uint32_t millisec) {
   if (millisec == 0) return osOK;
   rt_dly_wait(rt_ms2tick(millisec));
-  return osEventTimeout;
-}
-
-/// Wait for Timeout (Time Delay)
-osStatus svcDelayUs (uint32_t microsec) {
-  if (microsec == 0) return osOK;
-  rt_dly_wait(rt_us2tick(microsec));
   return osEventTimeout;
 }
 
@@ -746,12 +726,6 @@ os_InRegs osEvent_type svcWait (uint32_t millisec) {
 osStatus osDelay (uint32_t millisec) {
   if (__get_IPSR() != 0) return osErrorISR;     // Not allowed in ISR
   return __svcDelay(millisec);
-}
-
-/// Wait for Timeout (Time Delay)
-osStatus osDelayUs (uint32_t microsec) {
-  if (__get_IPSR() != 0) return osErrorISR;     // Not allowed in ISR
-  return __svcDelayUs(microsec);
 }
 
 /// Wait for Signal, Message, Mail, or Timeout
@@ -849,7 +823,6 @@ static int rt_timer_remove (os_timer_cb *pt) {
 // Timer Service Calls declarations
 SVC_3_1(svcTimerCreate,           osTimerId,  osTimerDef_t *, os_timer_type, void *, RET_pointer)
 SVC_2_1(svcTimerStart,            osStatus,   osTimerId,      uint32_t,              RET_osStatus)
-SVC_2_1(svcTimerStart_us,         osStatus,   osTimerId,      uint32_t,              RET_osStatus)
 SVC_1_1(svcTimerStop,             osStatus,   osTimerId,                             RET_osStatus)
 SVC_1_1(svcTimerDelete,           osStatus,   osTimerId,                             RET_osStatus)
 SVC_1_2(svcTimerCall,   os_InRegs osCallback, osTimerId,                             RET_osCallback)
@@ -903,36 +876,6 @@ osStatus svcTimerStart (osTimerId timer_id, uint32_t millisec) {
   if (pt == NULL) return osErrorParameter;
 
   tcnt = rt_ms2tick(millisec);
-  if (tcnt == 0) return osErrorValue;
-
-  switch (pt->state) {
-    case osTimerRunning:
-      if (rt_timer_remove(pt) != 0) {
-        return osErrorResource;
-      }
-      break;
-    case osTimerStopped:
-      pt->state = osTimerRunning;
-      pt->icnt  = (uint16_t)tcnt;
-      break;
-    default:
-      return osErrorResource;
-  }
-
-  rt_timer_insert(pt, tcnt);
-
-  return osOK;
-}
-
-/// Start or restart timer
-osStatus svcTimerStart_us (osTimerId timer_id, uint32_t microsec) {
-  os_timer_cb *pt;
-  uint32_t     tcnt;
-
-  pt = rt_id2obj(timer_id);
-  if (pt == NULL) return osErrorParameter;
-
-  tcnt = rt_us2tick(microsec);
   if (tcnt == 0) return osErrorValue;
 
   switch (pt->state) {
@@ -1053,12 +996,6 @@ osTimerId osTimerCreate (osTimerDef_t *timer_def, os_timer_type type, void *argu
 osStatus osTimerStart (osTimerId timer_id, uint32_t millisec) {
   if (__get_IPSR() != 0) return osErrorISR;     // Not allowed in ISR
   return __svcTimerStart(timer_id, millisec);
-}
-
-/// Start or restart timer
-osStatus osTimerStart_us (osTimerId timer_id, uint32_t microsec) {
-  if (__get_IPSR() != 0) return osErrorISR;     // Not allowed in ISR
-  return __svcTimerStart_us(timer_id, microsec);
 }
 
 /// Stop timer
@@ -1925,6 +1862,10 @@ osStatus osMailPut (osMailQId queue_id, void *mail) {
   return osMessagePut(*((void **)queue_id), (uint32_t)mail, 0);
 }
 
+#ifdef __CC_ARM
+#pragma push
+#pragma Ospace
+#endif // __arm__
 /// Get a mail from a queue
 os_InRegs osEvent osMailGet (osMailQId queue_id, uint32_t millisec) {
   osEvent ret;
@@ -1939,3 +1880,6 @@ os_InRegs osEvent osMailGet (osMailQId queue_id, uint32_t millisec) {
 
   return ret;
 }
+#ifdef __CC_ARM
+#pragma pop
+#endif // __arm__

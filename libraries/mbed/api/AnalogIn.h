@@ -64,14 +64,6 @@ public:
         return analogin_read(&_adc);
     }
 
-    /**
-     * Same as read, but does not apply median filtering.
-     */
-    float fastRead()
-    {
-        return analogin_read_fast(&_adc);
-    }
-
     /** Read the input voltage, represented as an unsigned short in the range [0x0, 0xFFFF]
      *
      * @returns

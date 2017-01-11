@@ -38,22 +38,8 @@ RtosTimer::RtosTimer(void (*periodic_task)(void const *argument), os_timer_type 
     _timer_id = osTimerCreate(&_timer, type, argument);
 }
 
-osStatus RtosTimer::start(float sec) {
-	uint32_t ms = sec * 1000.f;
-	uint32_t us = sec * 1000.f * 1000.f;
-
-	if( us <= 4000000 )
-		return osTimerStart_us(_timer_id, us);
-	else
-		return osTimerStart(_timer_id, ms);
-}
-
-osStatus RtosTimer::start_ms(uint32_t millisec) {
+osStatus RtosTimer::start(uint32_t millisec) {
     return osTimerStart(_timer_id, millisec);
-}
-
-osStatus RtosTimer::start_us(uint32_t microsec) {
-    return osTimerStart_us(_timer_id, microsec);
 }
 
 osStatus RtosTimer::stop(void) {

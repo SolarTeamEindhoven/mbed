@@ -33,10 +33,10 @@ Thread::Thread(void (*task)(void const *argument), void *argument,
     _thread_def.stacksize = stack_size;
 #ifndef __MBED_CMSIS_RTOS_CA9
     if (stack_pointer != NULL) {
-        _thread_def.stack_pointer = stack_pointer;
+        _thread_def.stack_pointer = (uint32_t*)stack_pointer;
         _dynamic_stack = false;
     } else {
-        _thread_def.stack_pointer = new unsigned char[stack_size];
+        _thread_def.stack_pointer = new uint32_t[stack_size/sizeof(uint32_t)];
         if (_thread_def.stack_pointer == NULL)
             error("Error allocating the stack memory\n");
         _dynamic_stack = true;
@@ -76,22 +76,8 @@ osEvent Thread::signal_wait(int32_t signals, uint32_t millisec) {
     return osSignalWait(signals, millisec);
 }
 
-osStatus Thread::wait(float sec) {
-	uint32_t ms = sec * 1000.f;
-	uint32_t us = sec * 1000.f * 1000.f;
-
-	if( us < 4000000000 )
-		return osDelayUs(us);
-	else
-		return osDelay(ms);
-}
-
-osStatus Thread::wait_ms(uint32_t millisec) {
+osStatus Thread::wait(uint32_t millisec) {
     return osDelay(millisec);
-}
-
-osStatus Thread::wait_us(uint32_t microsec) {
-    return osDelayUs(microsec);
 }
 
 osStatus Thread::yield() {
@@ -100,10 +86,6 @@ osStatus Thread::yield() {
 
 osThreadId Thread::gettid() {
     return osThreadGetId();
-}
-
-osThreadId Thread::getthistid() {
-    return _tid;
 }
 
 Thread::~Thread() {
