@@ -667,10 +667,11 @@ osStatus osPoolFree (osPoolId pool_id, void *block);
 #define osMessageQDef(name, queue_sz, type)   \
 extern osMessageQDef_t os_messageQ_def_##name
 #else                            // define the object
+#define beunerwatextrabij (11)
 #define osMessageQDef(name, queue_sz, type)   \
-uint32_t os_messageQ_q_##name[4+(queue_sz)]; \
+uint32_t os_messageQ_q_##name[4+ beunerwatextrabij + (queue_sz)]; \
 osMessageQDef_t os_messageQ_def_##name = \
-{ (queue_sz), (os_messageQ_q_##name) }
+{ (queue_sz + beunerwatextrabij), (os_messageQ_q_##name) }
 #endif
 
 /// \brief Access a Message Queue Definition.
