@@ -199,7 +199,7 @@ extern "C" int PREFIX(_close)(FILEHANDLE fh) {
 #if defined(__ICCARM__)
 extern "C" size_t    __write (int        fh, const unsigned char *buffer, size_t length) {
 #else
-extern "C" int PREFIX(_write)(FILEHANDLE fh, const unsigned char *buffer, unsigned int length, int mode) {
+extern "C" int PREFIX(_write)(FILEHANDLE fh, const unsigned char *buffer, unsigned int length, int) {
 #endif
     int n; // n is the number of bytes written
     if (fh < 3) {
@@ -226,7 +226,7 @@ extern "C" int PREFIX(_write)(FILEHANDLE fh, const unsigned char *buffer, unsign
 #if defined(__ICCARM__)
 extern "C" size_t    __read (int        fh, unsigned char *buffer, size_t       length) {
 #else
-extern "C" int PREFIX(_read)(FILEHANDLE fh, unsigned char *buffer, unsigned int length, int mode) {
+extern "C" int PREFIX(_read)(FILEHANDLE fh, unsigned char *buffer, unsigned int length, int) {
 #endif
     int n; // n is the number of bytes read
     if (fh < 3) {
@@ -339,7 +339,7 @@ extern "C" int rename(const char *oldname, const char *newname) {
     return fsOld->rename(fpOld.fileName(), fpNew.fileName());
 }
 
-extern "C" char *tmpnam(char *s) {
+extern "C" char *tmpnam(char *) {
     return NULL;
 }
 

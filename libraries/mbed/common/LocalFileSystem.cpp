@@ -214,7 +214,7 @@ int LocalFileSystem::remove(const char *filename) {
     return semihost_remove(filename);
 }
 
-DirHandle *LocalFileSystem::opendir(const char *name) {
+DirHandle *LocalFileSystem::opendir(const char *) {
     return new LocalDirHandle();
 }
 
